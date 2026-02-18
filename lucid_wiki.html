@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LUCID - 위키백과</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 상단 바 디자인: 고정(sticky/fixed) 제거 */
+        .top-nav {
+            background: linear-gradient(to right, #00a495, #008275);
+            height: 50px;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        .nav-logo {
+            font-size: 1.25rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        /* 로고 하트 스타일 */
+        .heart-icon { color: #ffffff; font-size: 1.4rem; }
+
+        body { background-color: #f4f4f4; color: #373a3c; font-family: 'Pretendard', sans-serif; }
+        .wiki-container { background: white; border: 1px solid #ccc; max-width: 1200px; margin: 20px auto; padding: 30px; }
+        .wiki-title { margin-bottom: 0px; font-size: 2.2rem; font-weight: bold; padding-bottom: 0px; }
+        
+        .last-edit { color: #66686b; font-size: 0.875rem; margin-bottom: 20px; text-align: left; font-weight: 300; }
+
+        .content-top-wrapper { display: flex; justify-content: left; align-items: flex-start; gap: 120px; margin-bottom: 30px; }
+
+        /* 정보박스 스타일 */
+        .info-box { width: 420px; border: 1px solid #ccc; background: white; flex-shrink: 0; }
+        .info-header { background-color: #8b5cf6; color: white; text-align: center; padding: 8px; font-weight: bold; font-size: 1.1rem; }
+        .info-logo-placeholder { width: 100%; aspect-ratio: 1/1; background-color: #e5e7eb; display: flex; align-items: center; justify-content: center; color: #6b7280; font-size: 0.8rem; border-bottom: 1px solid #ccc; }
+        .info-table { width: 100%; border-collapse: collapse; }
+        .info-table th { background-color: #8b5cf6; color: white; width: 35%; padding: 8px; font-size: 0.9rem; border: 1px solid #ddd; text-align: center; }
+        .info-table td { padding: 8px; font-size: 0.9rem; border: 1px solid #ddd; }
+
+        /* 링크 아이콘 스타일 */
+        .link-icon { display: inline-flex; align-items: center; color: var(--wiki-blue); text-decoration: none; font-size: 0.85rem; gap: 4px; }
+        .link-icon:hover { text-decoration: underline; }
+
+        /* 목차 스타일 수정: 호버 시 밑줄 추가 */
+        .toc-box { border: 1px solid #ccc; background: white; padding: 15px; min-width: 420px; }
+        .toc-title { font-weight: bold; text-align: left; margin-bottom: 8px; padding-left: 5px; }
+        .toc-list { text-align: left; color: #2563eb; }
+        .toc-list a { 
+            color: var(--wiki-blue); 
+            text-decoration: none; 
+            display: inline-block; /* 레이아웃 안정성을 위해 추가 */
+        }
+        .toc-list a:hover { 
+            text-decoration: underline; /* 마우스 올렸을 때 밑줄 생성 */
+        }
+        
+        .sec-num { color: #2563eb; margin-right: 5px; }
+
+        details summary { cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #bbb; margin-top: 30px; padding-bottom: 10px; }
+        .section-header-text { font-size: 1.6rem; font-weight: bold; display: flex; align-items: center; gap: 10px; }
+        .section-header-text::before { content: '▶'; font-size: 0.8rem; transition: transform 0.2s; color: #666; }
+        details[open] .section-header-text::before { transform: rotate(90deg); }
+        
+        /* 5.1.x 라인 소제목 스타일 */
+        .subsection-title { font-size: 1.35rem; font-weight: bold; margin-top: 25px; margin-bottom: 12px; display: block; }
+        
+        /* 기수별(5.1, 5.2) 소제목 텍스트 크기 */
+        .gi-header-text { font-size: 1.45rem; font-weight: bold; display: flex; align-items: center; gap: 10px; }        
+        .edit-link { color: #0275d8; font-size: 0.85rem; font-weight: normal; cursor: pointer; text-decoration: none; }
+        
+        .staff-table-wrapper { overflow-x: auto; margin-top: 15px; }
+        .staff-table { width: 100%; border-collapse: collapse; text-align: center; min-width: 950px; }
+        .staff-table th { background-color: #f8f9fa; border: 1px solid #ddd; padding: 8px; font-size: 0.85rem; font-weight: bold; }
+        .staff-table td { border: 1px solid #ddd; padding: 8px; font-size: 0.85rem; }
+       /* 접혔을 때 흐릿해지는 효과 설정 */
+        details summary { cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #bbb; margin-top: 30px; padding-bottom: 10px; transition: opacity 0.3s ease; }
+        
+        /* [핵심] 닫혀있을 때(open 속성이 없을 때) 흐릿하게 */
+        details:not([open]) summary {
+            opacity: 0.5; /* 흐릿함 정도 */
+        }
+
+        .section-header-text { font-size: 1.6rem; font-weight: bold; display: flex; align-items: center; gap: 10px; }
+        .section-header-text::before { content: '▶'; font-size: 0.8rem; transition: transform 0.2s; color: #666; }
+        details[open] .section-header-text::before { transform: rotate(90deg); }
+        
+        .subsection-header-text { font-size: 1.45rem; font-weight: bold; margin-top: 25px; margin-bottom: 12px; display: block; border-bottom: 1px dashed #eee; padding-bottom: 5px; }
+        
+        .staff-table-wrapper { overflow-x: auto; margin-top: 15px; }
+        .staff-table { width: 100%; border-collapse: collapse; text-align: center; min-width: 950px; }
+        .staff-table th { background-color: #f8f9fa; border: 1px solid #ddd; padding: 8px; font-size: 0.85rem; font-weight: bold; }
+        .staff-table td { border: 1px solid #ddd; padding: 8px; font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+
+<nav class="top-nav">
+    <div class="nav-logo">
+        <span class="heart-icon">♥</span>
+        <span>꺼무위키</span>
+    </div>
+</nav>
+
+<div class="wiki-container" id="view-mode">
+    <h1 class="wiki-title">루시드(LUCID)</h1>
+    <div class="last-edit">최근 수정 시각: 2026-02-19 02:40:00</div>
+
+    <div class="content-top-wrapper">
+        <nav class="toc-box">
+            <div class="toc-title">목차</div>
+            <ul class="toc-list space-y-1">
+                <li><a href="#sec-1">1. 개요</a></li>
+                <li><a href="#sec-2">2. 역사</a></li>
+                <li><a href="#sec-3">3. 팀 구성</a></li>
+                <li><a href="#sec-4">4. 역대 운영진</a></li>
+                <li><a href="#sec-5">5. 비판 및 논란</a>
+                    <ul class="ml-4 space-y-1">
+                        <li><a href="#sec-5-1">5.1. 7기</a>
+                            <ul class="ml-4">
+                                <li><a href="#sec-5-1-1">5.1.1. 피크민 논란</a></li>
+                                <li><a href="#sec-5-1-2">5.1.2. 꽃뱀 논란</a></li>
+                                <li><a href="#sec-5-1-3">5.1.3. 지리학과 카르텔 논란</a></li>
+                                <li><a href="#sec-5-1-4">5.1.4. 생물학과/물리학과 카르텔 논란</a></li>
+                                <li><a href="#sec-5-1-5">5.1.5. 미디어학과 부족 논란</a></li>
+                        <li><a href="#sec-5-1">5.1. 6기</a>
+                            <ul class="ml-4">
+                                <li><a href="#sec-5-2-1">5.2.1. 홍보 논란</a></li>  
+                            </ul>
+        </nav>
+
+        <aside class="info-box">
+            <div class="info-header">루시드(LUCID)</div>
+            <div class="info-logo-placeholder">(로고)</div>
+            <table class="info-table">
+                <tr><th>설립일</th><td>2022년 3월</td></tr>
+                <tr><th>창립자</th><td>김은진(연극영화학과)</td></tr>
+                <tr>
+                    <th>인스타그램</th>
+                    <td>
+                        <a href="https://www.instagram.com/lucid_with_u/" target="_blank" class="link-icon">
+                            바로가기 <svg width="12" color=#2563eb height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                        </a>
+                    </td>
+                <tr>
+                    <th>유튜브</th>
+                    <td>
+                        <a href="https://www.youtube.com/@khulucid" target="_blank" class="link-icon">
+                            바로가기 <svg width="12" color=#2563eb height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                        </a>
+                    </td>
+                </tr>
+            </table>
+        </aside>
+    </div>
+
+    <div id="wiki-content">
+        <details open>
+            <summary>
+                <div class="section-header-text" id="sec-1"><span class="sec-num">1.</span> 개요</div>
+                <a onclick="toggleEdit()" class="edit-link">[편집]</a>
+            </summary>
+            <div class="py-4">
+                <p class="leading-relaxed">루시드는 경희대학교 서울캠퍼스 소속 중앙동아리로, 뮤지컬 극단이다.</p>
+            </div>
+        </details>
+
+        <details open>
+            <summary>
+                <div class="section-header-text" id="sec-2"><span class="sec-num">2.</span> 역사</div>
+                <a onclick="toggleEdit()" class="edit-link">[편집]</a>
+            </summary>
+            <div class="py-4 pl-2">
+                <p class="mb-4">한 학기 단위로 기수가 운영되며, 매 기수마다 정기공연을 진행했다.</p>
+                <ul class="list-disc ml-6 space-y-2">
+                    <li><strong>&lt;내게, 꿈을 줘&gt;:</strong> 2023년 2월 제1회 정기공연</li>
+                    <li><strong>&lt;넥스트 투 노멀&gt;:</strong> 2023년 9월 제2회 정기공연</li>
+                    <li><strong>&lt;실비아, 살다&gt;:</strong> 2024년 3월 제3회 정기공연</li>
+                    <li><strong>&lt;구내과병원&gt;:</strong> 2024년 8월 제4회 정기공연</li>
+                    <li><strong>&lt;왓이프&gt;:</strong> 2025년 2월 제5회 정기공연</li>
+                    <li><strong>&lt;아이캔플라이&gt;:</strong> 2025년 8월 제6회 정기공연</li>
+                    <li><strong>&lt;이솝이야기&gt;:</strong> 2026년 2월 제7회 정기공연</li>
+                </ul>
+            </div>
+        </details>
+
+        <details open>
+            <summary>
+                <div class="section-header-text" id="sec-3"><span class="sec-num">3.</span> 팀 구성</div>
+                <a onclick="toggleEdit()" class="edit-link">[편집]</a>
+            </summary>
+            <div class="py-4 pl-2">
+                <ul class="list-disc ml-6 space-y-2">
+                    <li><strong>배우팀:</strong> 무대 위에서 연기 및 보컬 담당.</li>
+                    <li><strong>동선안무팀:</strong> 극의 흐름에 맞는 안무 구성.</li>
+                    <li><strong>음악팀:</strong> 보컬 지도 및 음악 완성도 책임.</li>
+                    <li><strong>무대팀:</strong> 조명, 음향, 무대 기술 담당.</li>
+                    <li><strong>기획팀:</strong> 예산 및 운영 담당.</li>
+                    <li><strong>홍보팀:</strong> SNS 및 콘텐츠 홍보 담당.</li>
+                </ul>
+            </div>
+        </details>
+
+        <details open>
+            <summary>
+                <div class="section-header-text" id="sec-4"><span class="sec-num">4.</span> 역대 운영진</div>
+                <a onclick="toggleEdit()" class="edit-link">[편집]</a>
+            </summary>
+            <div class="staff-table-wrapper">
+                <table class="staff-table">
+                    <thead>
+                        <tr>
+                            <th rowspan="2">기수</th><th colspan="3">중앙 운영진</th><th colspan="6">팀장</th>
+                        </tr>
+                        <tr>
+                            <th>회장</th><th>부회장</th><th>총무</th><th>배우</th><th>동선안무</th><th>음악</th><th>무대</th><th>기획</th><th>홍보</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>7기</td><td>박가현</td><td>최성욱</td><td>이수진</td><td>정승미</td><td>김채은</td><td>최진여</td><td>성유진</td><td>김규빈</td><td>김가현</td></tr>
+                        <tr><td>6기</td><td>박가현</td><td>최성욱</td><td>이수진</td><td>정승미</td><td>강봉석</td><td>최진여</td><td>경나연</td><td>박소정</td><td>최지혜</td></tr>
+                        <tr><td>5기</td><td>진하영</td><td>천혜리</td><td>이서영</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+                        <tr><td>4기</td><td>진하영</td><td>천혜리</td><td>이서영</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+                        <tr><td>3기</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+                        <tr><td>2기</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+                        <tr><td>1기</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </details>
+
+        <details open>
+            <summary>
+                <div class="section-header-text" id="sec-5"><span class="sec-num">5.</span> 비판 및 논란</div>
+                <a onclick="toggleEdit()" class="edit-link">[편집]</a>
+            </summary>
+            <div class="py-4 pl-4">
+                
+                <details open class="mb-6">
+                    <summary style="border-bottom: 1px solid #ddd; margin-top: 10px;">
+                        <div class="gi-header-text" id="sec-5-1"><span class="sec-num">5.1.</span> 7기</div>
+                        <span class="edit-link">[편집]</span>
+                    </summary>
+                    <div class="pl-4 pb-4">
+                        <div class="subsection-title" id="sec-5-1-1"><span class="sec-num">5.1.1.</span> 피크민 논란</div>
+                        <p class="mb-4 leading-relaxed">정승미가 바위피크민과 지나치게 닮아 생긴 논란.</p>
+
+                        <div class="subsection-title" id="sec-5-1-2"><span class="sec-num">5.1.2.</span> 꽃뱀 논란</div>
+                        <p class="mb-4 leading-relaxed">최성욱이 정기공연 &lt;이솝이야기&gt;의 장면 만들기 도중, '물뱀'이라는 대사를 '꽃뱀'으로 잘못 발언하여 발생한 논란.</p>
+
+                        <div class="subsection-title" id="sec-5-1-3"><span class="sec-num">5.1.3.</span> 지리학과 카르텔 논란</div>
+                        <p class="mb-4 leading-relaxed">7기 기준 지리학과 소속 부원이 4명(배승현, 심현민, 윤은혁, 박동현)이나 포진해 있어 발생하는 논란이다.</p>
+
+                        <div class="subsection-title" id="sec-5-1-4"><span class="sec-num">5.1.4.</span> 생물학과/물리학과 카르텔 논란</div>
+                        <p class="mb-4 leading-relaxed">7기 무대팀의 대다수가 생물학과 혹은 물리학과 학생들로 구성되어 제기된 카르텔 의혹.</p>
+
+                        <div class="subsection-title" id="sec-5-1-5"><span class="sec-num">5.1.5.</span> 미디어학과 부족 논란</div>
+                        <p class="leading-relaxed">'미!디!어! 크로스'를 위해서는 미디어학과가 3명 필요하지만, 7기 기준 여전히 2명뿐이라 크로스가 되지 않아 발생한 사태.</p>
+                    </div>
+                </details>
+
+                <details open>
+                    <summary style="border-bottom: 1px solid #ddd; margin-top: 10px;">
+                        <div class="gi-header-text" id="sec-5-2"><span class="sec-num">5.2.</span> 6기</div>
+                        <span class="edit-link">[편집]</span>
+                    </summary>
+                    <div class="pl-4 pb-4">
+                        <div class="subsection-title" id="sec-5-2-1"><span class="sec-num">5.2.1.</span> 홍보 논란</div>
+                        <p class="leading-relaxed">6기 활동 당시 홍보팀 인원이 단 한 명뿐이었던 탓에, '홍보팀'이 아닌 '홍보'가 된 논란이다.</p>
+                    </div>
+                </details>
+
+            </div>
+        </details>
+    </div>
+</div>
+
+<script>
+    function toggleEdit() {
+        const view = document.getElementById('view-mode');
+        const edit = document.getElementById('edit-area');
+        if (edit.style.display === 'none' || edit.style.display === '') {
+            view.style.display = 'none'; edit.style.display = 'block';
+        } else {
+            view.style.display = 'block'; edit.style.display = 'none';
+        }
+    }
+</script>
+
+</body>
+</html>
